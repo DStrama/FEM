@@ -112,9 +112,4 @@ public class Matrix {
 
     }
 
-    public void MatrixH(){
-         
-    }
-
-
 }
