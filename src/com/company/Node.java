@@ -8,7 +8,19 @@ public class Node {
     private double tempatature;
     private boolean boundaryCondition;
 
-    public Node(int index, double x, double y, double tempatature,double H, double W) {
+    public double getX() {
+        return x;
+    }
+
+    public double getY() {
+        return y;
+    }
+
+    public int getIndex() {
+        return index;
+    }
+
+    public Node(int index, double x, double y, double tempatature, double H, double W) {
         this.index = index;
         this.x = x;
         this.y = y;

@@ -9,7 +9,10 @@ public class Main {
     matrix.shapeFunctionsElement2D();
     matrix.matrixDerivativesAfterEta();
     matrix.matrixDerivativesAfterXi();
-
+    matrix.matrixOfJacobiego(gird.getElements()[0]);
+    matrix.matrixOfJacobiego(gird.getElements()[1]);
+    matrix.matrixOfJacobiego(gird.getElements()[2]);
+    matrix.matrixOfJacobiego(gird.getElements()[3]);
     }
 
 }

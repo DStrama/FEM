@@ -4,22 +4,26 @@ import java.util.Arrays;
 
 public class Element {
 
-    public int[] Nodes =new int[4];
+    public Node[] Nodes = new Node[4];
     int Index;
 
     public Element( int index) {
         Index = index;
     }
 
-    public void setNodes(int index,double nH) {
-        Nodes[0] = index;
-        Nodes[1] = Nodes[0] + (int)nH;
-        Nodes[2] = Nodes[1] + 1;
-        Nodes[3] = Nodes[0] + 1;
+    public void setNodes(Node nodeOne , Node nodeTwo, Node nodeThree, Node nodeFour) {
+        Nodes[0] = nodeOne;
+        Nodes[1] = nodeTwo;
+        Nodes[2] = nodeThree;
+        Nodes[3] = nodeFour;
 }
+
+    public Node[] getNodes() {
+        return Nodes;
+    }
 
     @Override
     public String toString() {
-        return "Element at index: " + Index + " has nodes: " + Nodes[0] + "," + Nodes[1] + "," + Nodes[2] + "," + Nodes[3];
+        return "Element at index: " + Index + " has nodes: " + Nodes[0].getIndex() + "," + Nodes[1].getIndex() + "," + Nodes[2].getIndex() + "," + Nodes[3].getIndex();
     }
 }
