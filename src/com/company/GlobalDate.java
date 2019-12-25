@@ -6,8 +6,8 @@ public class GlobalDate {
     private double width;
     private double numberNodeHight;
     private double numberNodeWidth;
-    private double numberOfElements;
-    private double numberOfNodes;
+    private int numberOfElements;
+    private int numberOfNodes;
 
     public GlobalDate() {
         ReadFile readFile = new ReadFile();
@@ -16,8 +16,8 @@ public class GlobalDate {
         width = dataArray[1];
         numberNodeHight = dataArray[2];
         numberNodeWidth = dataArray[3];
-        numberOfElements = (numberNodeWidth - 1) * (numberNodeHight - 1);
-        numberOfNodes = (numberNodeHight * numberNodeWidth);
+        numberOfElements = (int)((numberNodeWidth - 1) * (numberNodeHight - 1));
+        numberOfNodes = (int)((numberNodeHight * numberNodeWidth));
     }
 
     public double getHeight() {
@@ -37,11 +37,11 @@ public class GlobalDate {
     }
 
 
-    public double getNumberOfElements() {
+    public int getNumberOfElements() {
         return numberOfElements;
     }
 
-    public double getNumberOfNodes() {
+    public int getNumberOfNodes() {
         return numberOfNodes;
     }
 }
