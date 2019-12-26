@@ -2,11 +2,15 @@ package com.company;
 
 public class Matrix {
 
-    private double E = (1/Math.sqrt(3));
+    //private double E = (1/Math.sqrt(3));
+    private double E = 1;
     private double n = (1/Math.sqrt(3));
     private double weight1 = 1;
     private double weight2 = 1;
-    private double k;
+    private double K = 30;
+    private double c = 700;
+    private double ro = 7800;
+    private double alfa = 25;
 
     // jeden element uniwerslany
     private UniversalElement[] localCoordinate = new UniversalElement[]{
@@ -23,6 +27,8 @@ public class Matrix {
     private double [] detJacobiTab = new double[localCoordinate.length];
     double [][] dNAfterdy = new double[localCoordinate.length][localCoordinate.length];
     double [][] dNAfterdx = new double[localCoordinate.length][localCoordinate.length];
+    double [][] matrixH = new double[localCoordinate.length][localCoordinate.length];
+    double [][] matrixC = new double[localCoordinate.length][localCoordinate.length];
 
     public void shapeFunctionsElement2D( ){
         double[][] matrixOfShapeFunctions = new double[4][4];
@@ -111,7 +117,9 @@ public class Matrix {
         detJacobi();
         dNafterDx();
         dNafterDy();
-        littlematrixH();
+        matrixH();
+        matrixC();
+        matrixH_BC();
     }
 
     public void detJacobi(){
@@ -129,7 +137,6 @@ public class Matrix {
 
         for(int i=0; i<localCoordinate.length;i++){
             for(int j=0; j<localCoordinate.length;j++){
-                System.out.println("jacobian 1/[detj] " +(1/detJacobiTab[i]) + " " + matrixJacobi[3][i] + " " + derivativesAfterEta[i][j] + " " + matrixJacobi[2][i] + " " + derivativesAfterXi[i][j] );
                 Matrix_dNAfterdx[i][j] = (1/detJacobiTab[i]) * ( (matrixJacobi[3][i] * derivativesAfterXi[i][j]) - (matrixJacobi[2][i] * derivativesAfterEta[i][j]));
             }
         }
@@ -160,34 +167,94 @@ public class Matrix {
         }
     }
 
-    public void littlematrixH(){
+    public void matrixH(){
+        double [][][] eleMatrixH = new double [4][4][4];
+        for(int z=0; z<localCoordinate.length;z++) {
+            for(int i = 0; i < localCoordinate.length; i++){
+                for(int j = 0; j < localCoordinate.length; j++){
+                eleMatrixH[z][i][j] = K*(dNAfterdx[z][i]*dNAfterdx[z][j] + dNAfterdy[z][i]*dNAfterdy[z][j])*detJacobiTab[z];
+                matrixH[i][j] += eleMatrixH[z][i][j];
+            }
+        }
+      }
 
-        double [][] matrixMultiplicationDx = new double [4][4];
-        double [][] matrixMultiplicationDy = new double [4][4];
-        double [][] vector_dNAfterdx = new double[4][4];
-        double [][] vector_dNAfterdy = new double[4][4];
-        double [][] matrixSum = new double [4][4];
-        double [][] vector = new double [4][4];
-        double [] pc_1_vector = new double[4];
-        double [] pc_2_vector = new double[4];
-        double [] pc_3_vector = new double[4];
-        double [] pc_4_vector = new double[4];
+      System.out.println("Macierz H");
+      for(int i = 0; i < localCoordinate.length; i++){
+          for(int j = 0; j < localCoordinate.length; j++){
+              System.out.println(matrixH[i][j]);
+          }
+      }
+      System.out.println();
+    }
 
-        for(int k=0;k<localCoordinate.length;k++){
-            for (int j=3,i = 0; i < localCoordinate.length; i++,j--){
-                vector[k][i] = dNAfterdx[k][j];
+    public void matrixC(){
+        double [][][] eleMatrixC = new double [4][4][4];
+        for(int z=0; z<localCoordinate.length;z++) {
+            for(int i = 0; i < localCoordinate.length; i++){
+                for(int j = 0; j < localCoordinate.length; j++){
+                    eleMatrixC[z][i][j] = c*ro*(shapeFunctions[z][i]*shapeFunctions[z][j])*detJacobiTab[z];
+                    matrixC[i][j] += eleMatrixC[z][i][j];
+                }
             }
         }
 
-//        for (int i = 0; i < localCoordinate.length; i++) { // A rows
-//            for (int j = 0; j < localCoordinate.length; j++) { // B columns
-//                for (int k = 0; k < 1; k++) { // A columns
-//                    matrixMultiplicationDx[i][j] += dNAfterdx[i][k] * dNAfterdx[k][j];
-//                    System.out.println( matrixMultiplicationDx[i][j]);
-//                }
-//            }
-//        }
+        System.out.println("Macierz C");
+        for(int i = 0; i < localCoordinate.length; i++){
+            for(int j = 0; j < localCoordinate.length; j++){
+                System.out.println(matrixC[i][j]);
+            }
+        }
+        System.out.println();
+
     }
 
+    public void matrixH_BC(){
+        double [][][] pow = new double[localCoordinate.length][2][localCoordinate.length];
+
+        for(int i=0;i<2;i++){
+            int [] liczba = {0,1};
+            for(int j=0;j<4;j++){
+                pow[0][i][j] = localCoordinate[liczba[i]].shapeFunctions[j];
+            }
+        }
+        for(int i=0;i<2;i++){
+            int [] liczba = {1,2};
+            for(int j=0;j<4;j++){
+
+                pow[1][i][j] = localCoordinate[liczba[i]].shapeFunctions[j];
+            }
+        }
+        for(int i=0;i<2;i++){
+            int [] liczba = {2,3};
+            for(int j=0;j<4;j++){
+                pow[2][i][j] = localCoordinate[liczba[i]].shapeFunctions[j];
+            }
+        }
+        for(int i=0;i<2;i++){
+            int [] liczba = {0,3};
+            for(int j=0;j<4;j++){
+                pow[3][i][j] = localCoordinate[liczba[i]].shapeFunctions[j];
+            }
+        }
+
+//        for(int z=0;z<4;z++){
+//                    System.out.println(localCoordinate[0].shapeFunctions[z]);
+//        }
+//        System.out.println();
+//
+//        for(int z=0;z<4;z++){
+//            System.out.println(localCoordinate[1].shapeFunctions[z]);
+//        }
+//        System.out.println();
+//
+//        for(int z=0;z<4;z++){
+//            System.out.println(localCoordinate[2].shapeFunctions[z]);
+//        }
+//        System.out.println();
+//        for(int z=0;z<4;z++){
+//            System.out.println(localCoordinate[3].shapeFunctions[z]);
+//        }
+//        System.out.println();
+    }
 
 }
