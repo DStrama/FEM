@@ -3,14 +3,18 @@ package com.company;
 public class Matrix {
 
     //private double E = (1/Math.sqrt(3));
-    private double E = 1;
+    private double E = (1/Math.sqrt(3));
     private double n = (1/Math.sqrt(3));
     private double weight1 = 1;
     private double weight2 = 1;
-    private double K = 30;
+    //CONDUCTIVITY
+    private double K = 25;
+    //SPECIFIC HEAT
     private double c = 700;
+    //DENSITY
     private double ro = 7800;
-    private double alfa = 25;
+    private double alfa = 300;
+    private double initialTemperature = 120;
 
     // jeden element uniwerslany
     private UniversalElement[] localCoordinate = new UniversalElement[]{
@@ -28,6 +32,7 @@ public class Matrix {
     double [][] dNAfterdy = new double[localCoordinate.length][localCoordinate.length];
     double [][] dNAfterdx = new double[localCoordinate.length][localCoordinate.length];
     double [][] matrixH = new double[localCoordinate.length][localCoordinate.length];
+    double [][] matrixH_BC = new double[localCoordinate.length][localCoordinate.length];
     double [][] matrixC = new double[localCoordinate.length][localCoordinate.length];
 
     public void shapeFunctionsElement2D( ){
@@ -211,50 +216,86 @@ public class Matrix {
     public void matrixH_BC(){
         double [][][] pow = new double[localCoordinate.length][2][localCoordinate.length];
 
+
         for(int i=0;i<2;i++){
             int [] liczba = {0,1};
             for(int j=0;j<4;j++){
+                double tmp = localCoordinate[liczba[i]].integrationPoint[1];
+                localCoordinate[liczba[i]].integrationPoint[1] = -1;
+                localCoordinate[liczba[i]].setShapeFunctions();
                 pow[0][i][j] = localCoordinate[liczba[i]].shapeFunctions[j];
+                System.out.println(pow[0][i][j]);
+                localCoordinate[liczba[i]].integrationPoint[1] = tmp;
+                localCoordinate[liczba[i]].setShapeFunctions();
             }
         }
+        System.out.println();
+
         for(int i=0;i<2;i++){
             int [] liczba = {1,2};
             for(int j=0;j<4;j++){
-
+                double tmp = localCoordinate[liczba[i]].integrationPoint[0];
+                localCoordinate[liczba[i]].integrationPoint[0] = 1;
+                localCoordinate[liczba[i]].setShapeFunctions();
                 pow[1][i][j] = localCoordinate[liczba[i]].shapeFunctions[j];
+                System.out.println(pow[1][i][j]);
+                localCoordinate[liczba[i]].integrationPoint[0] = tmp;
+                localCoordinate[liczba[i]].setShapeFunctions();
             }
         }
+        System.out.println();
         for(int i=0;i<2;i++){
             int [] liczba = {2,3};
             for(int j=0;j<4;j++){
+                double tmp = localCoordinate[liczba[i]].integrationPoint[1];
+                localCoordinate[liczba[i]].integrationPoint[1] = 1;
+                localCoordinate[liczba[i]].setShapeFunctions();
                 pow[2][i][j] = localCoordinate[liczba[i]].shapeFunctions[j];
+                System.out.println(pow[2][i][j]);
+                localCoordinate[liczba[i]].integrationPoint[1] = tmp;
+                localCoordinate[liczba[i]].setShapeFunctions();
             }
         }
+        System.out.println();
         for(int i=0;i<2;i++){
-            int [] liczba = {0,3};
+            int [] liczba = {3,0};
             for(int j=0;j<4;j++){
+                double tmp = localCoordinate[liczba[i]].integrationPoint[0];
+                localCoordinate[liczba[i]].integrationPoint[0] = -1;
+                localCoordinate[liczba[i]].setShapeFunctions();
                 pow[3][i][j] = localCoordinate[liczba[i]].shapeFunctions[j];
+                //System.out.println(pow[3][i][j]);
+                localCoordinate[liczba[i]].integrationPoint[0] = tmp;
+                localCoordinate[liczba[i]].setShapeFunctions();
+            }
+        }
+        System.out.println();
+
+        System.out.println("H BC");
+        for(int z=0;z<localCoordinate.length;z++){
+                for(int i=0; i<localCoordinate.length; i++) {
+                    for (int k = 0; k < localCoordinate.length; k++) {
+                        matrixH_BC[i][k] += (detJacobiTab[z]*((pow[z][0][i] * pow[z][0][k])*alfa*weight1 + (pow[z][1][i] * pow[z][1][k]*alfa*weight2)));
+                    }
+                }
+        }
+
+        for(int i=0; i<localCoordinate.length; i++) {
+            for (int k = 0; k < localCoordinate.length; k++) {
+        System.out.println(matrixH_BC[i][k]);
             }
         }
 
-//        for(int z=0;z<4;z++){
-//                    System.out.println(localCoordinate[0].shapeFunctions[z]);
-//        }
-//        System.out.println();
-//
-//        for(int z=0;z<4;z++){
-//            System.out.println(localCoordinate[1].shapeFunctions[z]);
-//        }
-//        System.out.println();
-//
-//        for(int z=0;z<4;z++){
-//            System.out.println(localCoordinate[2].shapeFunctions[z]);
-//        }
-//        System.out.println();
-//        for(int z=0;z<4;z++){
-//            System.out.println(localCoordinate[3].shapeFunctions[z]);
-//        }
-//        System.out.println();
+    }
+
+    public void vector_P(){
+        double [][] p = new double[localCoordinate.length][localCoordinate.length];
+        for(int i=0;i<localCoordinate.length;i++){
+            for(int j=0;j<localCoordinate.length;j++){
+                p[i][j] = -alfa*shapeFunctions[i][j]*initialTemperature;
+            }
+        }
+
     }
 
 }

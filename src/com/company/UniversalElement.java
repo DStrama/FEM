@@ -16,7 +16,19 @@ public class UniversalElement {
 
     }
 
+    public void setIntegrationPoint(double[] integrationPoint) {
+        this.integrationPoint = integrationPoint;
+    }
 
+    public void setDerivativesAfterXi() {
+        derivativesAfterXi = new double[]{( integrationPoint[1] - 1 )/4,( 1 - integrationPoint[1])/4,( 1 + integrationPoint[1])/4,-( 1 + integrationPoint[1])/4};
+    }
 
+    public void setDerivativesAfterEta() {
+        derivativesAfterEta = new double[]{( integrationPoint[0] - 1 )/4, -( 1 + integrationPoint[0])/4,( 1 + integrationPoint[0])/4,( 1 - integrationPoint[0])/4};
+    }
 
+    public void setShapeFunctions() {
+        shapeFunctions= new double[]{( 1 - integrationPoint[0]  )*( 1 - integrationPoint[1])/4,( 1 + integrationPoint[0]  )*( 1 - integrationPoint[1])/4,( 1 + integrationPoint[0]  )*( 1 + integrationPoint[1])/4,( 1 - integrationPoint[0]  )*( 1 + integrationPoint[1])/4};
+    }
 }
