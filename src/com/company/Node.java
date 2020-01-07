@@ -28,7 +28,11 @@ public class Node {
         this.boundaryCondition = boundryCondition(H,W);
     }
 
-    public boolean boundryCondition(double H,double W){
+    public boolean isBoundaryCondition() {
+        return boundaryCondition;
+    }
+
+    public boolean boundryCondition(double H, double W){
         return( (x == 0) || (y == 0) || (x == W) || (y == H)  );
     }
 

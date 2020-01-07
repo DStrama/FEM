@@ -13,7 +13,6 @@ public class UniversalElement {
         this.derivativesAfterXi = new double[]{( n - 1 )/4,( 1 - n)/4,( 1 + n)/4,-( 1 + n)/4};
         this.derivativesAfterEta = new double[]{( e - 1 )/4, -( 1 + e)/4,( 1 + e)/4,( 1 - e)/4};
         this.shapeFunctions= new double[]{( 1 - e )*( 1 - n)/4,( 1 + e )*( 1 - n)/4,( 1 + e )*( 1 + n)/4,( 1 - e )*( 1 + n)/4};
-
     }
 
     public void setIntegrationPoint(double[] integrationPoint) {

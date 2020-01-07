@@ -5,9 +5,8 @@ import static java.lang.StrictMath.sqrt;
 public class Main {
 
     public static void main(String[] args) {
-
-    Grid gird = new Grid();
+    Grid grid = new Grid();
     Matrix matrix = new Matrix();
-    matrix.matrixOfJacobiego(gird.getElements()[0]);
+    matrix.aggregation(grid);
     }
 }

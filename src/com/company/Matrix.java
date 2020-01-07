@@ -1,7 +1,10 @@
 package com.company;
 
-public class Matrix {
+import org.w3c.dom.ls.LSOutput;
 
+import java.util.Arrays;
+
+public class Matrix {
     //private double E = (1/Math.sqrt(3));
     private double E = (1/Math.sqrt(3));
     private double n = (1/Math.sqrt(3));
@@ -14,9 +17,8 @@ public class Matrix {
     //DENSITY
     private double ro = 7800;
     private double alfa = 300;
-    private double initialTemperature = 120;
+    private double initialTemperature = 1200;
 
-    // jeden element uniwerslany
     private UniversalElement[] localCoordinate = new UniversalElement[]{
             new UniversalElement(-E,-n,weight1,weight2),
             new UniversalElement(E,-n,weight1,weight2),
@@ -24,19 +26,11 @@ public class Matrix {
             new UniversalElement(-E,n,weight1,weight2)
     };
 
-    private double [][] shapeFunctions = new double[localCoordinate.length][localCoordinate.length];
-    private double [][] derivativesAfterXi = new double[localCoordinate.length][localCoordinate.length];
-    private double [][] derivativesAfterEta = new double[localCoordinate.length][localCoordinate.length];
-    private double [][] matrixJacobi = new double[localCoordinate.length][localCoordinate.length];
-    private double [] detJacobiTab = new double[localCoordinate.length];
-    double [][] dNAfterdy = new double[localCoordinate.length][localCoordinate.length];
-    double [][] dNAfterdx = new double[localCoordinate.length][localCoordinate.length];
-    double [][] matrixH = new double[localCoordinate.length][localCoordinate.length];
-    double [][] matrixH_BC = new double[localCoordinate.length][localCoordinate.length];
-    double [][] matrixC = new double[localCoordinate.length][localCoordinate.length];
 
-    public void shapeFunctionsElement2D( ){
+    public double[][] shapeFunctionsElement2D(){
+
         double[][] matrixOfShapeFunctions = new double[4][4];
+
         for(int i=0; i < localCoordinate.length ;i++){
             matrixOfShapeFunctions[i] = new double[]{
                     localCoordinate[i].shapeFunctions[0],
@@ -44,18 +38,14 @@ public class Matrix {
                     localCoordinate[i].shapeFunctions[2],
                     localCoordinate[i].shapeFunctions[3]};
         }
-        shapeFunctions = matrixOfShapeFunctions;
-        System.out.println("shape");
-        for(int j = 0; j<localCoordinate.length; j++){
-            for(int i = 0; i<localCoordinate.length; i++){
-                System.out.println(shapeFunctions[j][i]);
-            }
-        }
+        return matrixOfShapeFunctions;
     }
 
 
-    public void matrixDerivativesAfterXi(){
+    public double [][] matrixDerivativesAfterXi(){
+
         double[][] matrixDerivativesAfterXi = new double[4][4];
+
         for(int i=0; i < localCoordinate.length ;i++){
             matrixDerivativesAfterXi[i] = new double[]{
                     localCoordinate[i].derivativesAfterXi[0],
@@ -63,17 +53,13 @@ public class Matrix {
                     localCoordinate[i].derivativesAfterXi[2],
                     localCoordinate[i].derivativesAfterXi[3]};
         }
-        derivativesAfterXi = matrixDerivativesAfterXi;
-        System.out.println("dN _ dxi");
-        for(int j = 0; j<localCoordinate.length; j++){
-            for(int i = 0; i<localCoordinate.length; i++){
-                System.out.println(derivativesAfterXi[j][i]);
-            }
-        }
+        return matrixDerivativesAfterXi;
     }
 
-    public void matrixDerivativesAfterEta(){
+    public double[][] matrixDerivativesAfterEta(){
+
         double[][] matrixDerivativesAfterEta = new double[4][4];
+
         for(int i=0; i < localCoordinate.length ;i++){
             matrixDerivativesAfterEta[i] = new double[]{
                     localCoordinate[i].derivativesAfterEta[0],
@@ -81,155 +67,117 @@ public class Matrix {
                     localCoordinate[i].derivativesAfterEta[2],
                     localCoordinate[i].derivativesAfterEta[3]};
         }
-        derivativesAfterEta = matrixDerivativesAfterEta;
-        System.out.println("dN _ dn");
-        for(int j = 0; j<localCoordinate.length; j++){
-            for(int i = 0; i<localCoordinate.length; i++){
-                System.out.println(derivativesAfterEta[j][i]);
-            }
-        }
+        return matrixDerivativesAfterEta;
     }
 
-    public void matrixOfJacobiego(Element element){
-        shapeFunctionsElement2D();
-        matrixDerivativesAfterXi();
-        matrixDerivativesAfterEta();
+    public double[][] matrixOfJacobiego(Element element){
+
         double[][] matrixOfElementJacobian = new double[4][4];
         double[] dx_dxi = new double[4];
         double[] dx_dn = new double[4];
         double[] dy_dxi = new double[4];
         double[] dy_dn = new double[4];
+
         for(int i=0;i<localCoordinate.length;i++){
             for(int j=0; j<localCoordinate.length;j++){
-                System.out.println("X: " +element.Nodes[j].getX() + " Y: " +element.Nodes[j].getY() );
-                dx_dxi[i] += derivativesAfterXi[i][j] * element.Nodes[j].getX();
-                dx_dn[i] +=  derivativesAfterEta[i][j] * element.Nodes[j].getX();
-                dy_dxi[i] += derivativesAfterXi[i][j] * element.Nodes[j].getY();
-                dy_dn[i] += derivativesAfterEta[i][j] * element.Nodes[j].getY();
+                dx_dxi[i] += matrixDerivativesAfterXi()[i][j] * element.Nodes[j].getX();
+                dx_dn[i] +=  matrixDerivativesAfterEta()[i][j] * element.Nodes[j].getX();
+                dy_dxi[i] += matrixDerivativesAfterXi()[i][j] * element.Nodes[j].getY();
+                dy_dn[i] += matrixDerivativesAfterEta()[i][j] * element.Nodes[j].getY();
             }
             matrixOfElementJacobian[0][i] = dx_dxi[i];
             matrixOfElementJacobian[1][i] = dx_dn[i];
             matrixOfElementJacobian[2][i] = dy_dxi[i];
             matrixOfElementJacobian[3][i] = dy_dn[i];
         }
-        for(int i=0; i<localCoordinate.length;i++){
-            for(int j=0; j<localCoordinate.length;j++){
-                System.out.println(matrixOfElementJacobian[i][j]);
-            }
-        }
-
-        matrixJacobi = matrixOfElementJacobian;
-        detJacobi();
-        dNafterDx();
-        dNafterDy();
-        matrixH();
-        matrixC();
-        matrixH_BC();
+        return matrixOfElementJacobian;
     }
 
-    public void detJacobi(){
+    public double[] detJacobi(Element element){
+
         double [] matrixDetJacobi = new double[localCoordinate.length];
+
         for(int j = 0; j<localCoordinate.length; j++){
-            matrixDetJacobi[j] = (matrixJacobi[0][j] * matrixJacobi[3][j]) - (matrixJacobi[2][j] * matrixJacobi[1][j]);
-            System.out.println(matrixDetJacobi[j]);
+            matrixDetJacobi[j] = (matrixOfJacobiego(element)[0][j] * matrixOfJacobiego(element)[3][j]) - (matrixOfJacobiego(element)[2][j] * matrixOfJacobiego(element)[1][j]);
         }
-        detJacobiTab = matrixDetJacobi;
+        return matrixDetJacobi;
     }
 
 
-    public void dNafterDx(){
+    public double[][] dNafterDx(Element element){
+
         double [][] Matrix_dNAfterdx = new double[localCoordinate.length][localCoordinate.length];
 
         for(int i=0; i<localCoordinate.length;i++){
             for(int j=0; j<localCoordinate.length;j++){
-                Matrix_dNAfterdx[i][j] = (1/detJacobiTab[i]) * ( (matrixJacobi[3][i] * derivativesAfterXi[i][j]) - (matrixJacobi[2][i] * derivativesAfterEta[i][j]));
+                Matrix_dNAfterdx[i][j] = (1/detJacobi(element)[i]) * ( (matrixOfJacobiego(element)[3][i] * matrixDerivativesAfterXi()[i][j]) - (matrixOfJacobiego(element)[2][i] * matrixDerivativesAfterEta()[i][j]));
             }
         }
-        dNAfterdx = Matrix_dNAfterdx;
-        System.out.println("dN after dx");
-        for(int i=0; i<localCoordinate.length;i++){
-            for(int j=0; j<localCoordinate.length;j++){
-                System.out.println("N"+ (j+1) + "/dx    "  + dNAfterdx[i][j]);
-            }
-        }
+        return Matrix_dNAfterdx;
     }
 
-    public void dNafterDy(){
+    public double[][] dNafterDy(Element element){
+
         double [][] Matrix_dNAfterdy = new double[localCoordinate.length][localCoordinate.length];
 
         for(int i=0; i<localCoordinate.length;i++){
             for(int j=0; j<localCoordinate.length;j++){
-                Matrix_dNAfterdy[i][j] = (1/detJacobiTab[i]) * ( (matrixJacobi[0][i] * derivativesAfterEta[i][j]) - (matrixJacobi[1][i] * derivativesAfterXi[i][j]));
+                Matrix_dNAfterdy[i][j] = (1/detJacobi(element)[i]) * ( (matrixOfJacobiego(element)[0][i] * matrixDerivativesAfterEta()[i][j]) - (matrixOfJacobiego(element)[1][i] *  matrixDerivativesAfterXi()[i][j]));
 
             }
         }
-        dNAfterdy = Matrix_dNAfterdy;
-        System.out.println("dn after dy");
-        for(int i=0; i<localCoordinate.length;i++){
-            for(int j=0; j<localCoordinate.length;j++){
-                System.out.println("N"+ (j+1) + "/dy    "  + dNAfterdy[i][j]);
-            }
-        }
+        return Matrix_dNAfterdy;
     }
 
-    public void matrixH(){
+    public double [][] matrixH(Element element){
+
         double [][][] eleMatrixH = new double [4][4][4];
+        double [][] matrixH = new double[localCoordinate.length][localCoordinate.length];
+
         for(int z=0; z<localCoordinate.length;z++) {
             for(int i = 0; i < localCoordinate.length; i++){
                 for(int j = 0; j < localCoordinate.length; j++){
-                eleMatrixH[z][i][j] = K*(dNAfterdx[z][i]*dNAfterdx[z][j] + dNAfterdy[z][i]*dNAfterdy[z][j])*detJacobiTab[z];
-                matrixH[i][j] += eleMatrixH[z][i][j];
+                    eleMatrixH[z][i][j] = K*(dNafterDx(element)[z][i]*dNafterDx(element)[z][j] + dNafterDy(element)[z][i]*dNafterDy(element)[z][j])*detJacobi(element)[z];
+                    matrixH[i][j] += eleMatrixH[z][i][j];
+                }
             }
         }
-      }
-
-      System.out.println("Macierz H");
-      for(int i = 0; i < localCoordinate.length; i++){
-          for(int j = 0; j < localCoordinate.length; j++){
-              System.out.println(matrixH[i][j]);
-          }
-      }
-      System.out.println();
+        return matrixH;
     }
 
-    public void matrixC(){
+    public double [][] matrixC(Element element){
+
         double [][][] eleMatrixC = new double [4][4][4];
+        double [][] matrixC = new double[4][4];
         for(int z=0; z<localCoordinate.length;z++) {
             for(int i = 0; i < localCoordinate.length; i++){
                 for(int j = 0; j < localCoordinate.length; j++){
-                    eleMatrixC[z][i][j] = c*ro*(shapeFunctions[z][i]*shapeFunctions[z][j])*detJacobiTab[z];
+                    eleMatrixC[z][i][j] = c*ro*(shapeFunctionsElement2D()[z][i]*shapeFunctionsElement2D()[z][j])*detJacobi(element)[z];
                     matrixC[i][j] += eleMatrixC[z][i][j];
                 }
             }
         }
-
-        System.out.println("Macierz C");
-        for(int i = 0; i < localCoordinate.length; i++){
-            for(int j = 0; j < localCoordinate.length; j++){
-                System.out.println(matrixC[i][j]);
-            }
-        }
-        System.out.println();
-
+        return matrixC;
     }
 
-    public void matrixH_BC(){
-        double [][][] pow = new double[localCoordinate.length][2][localCoordinate.length];
-
-
+    public double [][][] elementSurface(Element element){
+        double [][][] surfaces = new double[localCoordinate.length][2][localCoordinate.length];
         for(int i=0;i<2;i++){
             int [] liczba = {0,1};
             for(int j=0;j<4;j++){
                 double tmp = localCoordinate[liczba[i]].integrationPoint[1];
                 localCoordinate[liczba[i]].integrationPoint[1] = -1;
                 localCoordinate[liczba[i]].setShapeFunctions();
-                pow[0][i][j] = localCoordinate[liczba[i]].shapeFunctions[j];
-                System.out.println(pow[0][i][j]);
+                if(element.Nodes[0].isBoundaryCondition() && element.Nodes[1].isBoundaryCondition()){
+                    surfaces[0][i][j] = localCoordinate[liczba[i]].shapeFunctions[j];
+                }
+                else{
+                    surfaces[0][i][j] = 0;
+                }
                 localCoordinate[liczba[i]].integrationPoint[1] = tmp;
                 localCoordinate[liczba[i]].setShapeFunctions();
             }
         }
-        System.out.println();
 
         for(int i=0;i<2;i++){
             int [] liczba = {1,2};
@@ -237,65 +185,141 @@ public class Matrix {
                 double tmp = localCoordinate[liczba[i]].integrationPoint[0];
                 localCoordinate[liczba[i]].integrationPoint[0] = 1;
                 localCoordinate[liczba[i]].setShapeFunctions();
-                pow[1][i][j] = localCoordinate[liczba[i]].shapeFunctions[j];
-                System.out.println(pow[1][i][j]);
+                if(element.Nodes[1].isBoundaryCondition() && element.Nodes[2].isBoundaryCondition()){
+                    surfaces[1][i][j] = localCoordinate[liczba[i]].shapeFunctions[j];
+                }
+                else{
+                    surfaces[1][i][j] = 0;
+                }
                 localCoordinate[liczba[i]].integrationPoint[0] = tmp;
                 localCoordinate[liczba[i]].setShapeFunctions();
             }
         }
-        System.out.println();
+
         for(int i=0;i<2;i++){
             int [] liczba = {2,3};
             for(int j=0;j<4;j++){
                 double tmp = localCoordinate[liczba[i]].integrationPoint[1];
                 localCoordinate[liczba[i]].integrationPoint[1] = 1;
                 localCoordinate[liczba[i]].setShapeFunctions();
-                pow[2][i][j] = localCoordinate[liczba[i]].shapeFunctions[j];
-                System.out.println(pow[2][i][j]);
+                if(element.Nodes[2].isBoundaryCondition() && element.Nodes[3].isBoundaryCondition()){
+                    surfaces[2][i][j] = localCoordinate[liczba[i]].shapeFunctions[j];
+                }
+                else{
+                    surfaces[2][i][j] = 0;
+                }
                 localCoordinate[liczba[i]].integrationPoint[1] = tmp;
                 localCoordinate[liczba[i]].setShapeFunctions();
             }
         }
-        System.out.println();
+
         for(int i=0;i<2;i++){
             int [] liczba = {3,0};
             for(int j=0;j<4;j++){
                 double tmp = localCoordinate[liczba[i]].integrationPoint[0];
                 localCoordinate[liczba[i]].integrationPoint[0] = -1;
                 localCoordinate[liczba[i]].setShapeFunctions();
-                pow[3][i][j] = localCoordinate[liczba[i]].shapeFunctions[j];
-                //System.out.println(pow[3][i][j]);
+                if(element.Nodes[3].isBoundaryCondition() && element.Nodes[0].isBoundaryCondition()){
+                    surfaces[3][i][j] = localCoordinate[liczba[i]].shapeFunctions[j];
+                }
+                else{
+                    surfaces[3][i][j] = 0;
+                }
                 localCoordinate[liczba[i]].integrationPoint[0] = tmp;
                 localCoordinate[liczba[i]].setShapeFunctions();
             }
         }
-        System.out.println();
+        return surfaces;
+    }
 
-        System.out.println("H BC");
+    public double [][] matrixH_BC(Element element){
+        double [][] matrixH_BC = new double[4][4];
+
         for(int z=0;z<localCoordinate.length;z++){
                 for(int i=0; i<localCoordinate.length; i++) {
                     for (int k = 0; k < localCoordinate.length; k++) {
-                        matrixH_BC[i][k] += (detJacobiTab[z]*((pow[z][0][i] * pow[z][0][k])*alfa*weight1 + (pow[z][1][i] * pow[z][1][k]*alfa*weight2)));
+                        matrixH_BC[i][k] += matrixOfJacobiego(element)[0][z]*((elementSurface(element)[z][0][i] * elementSurface(element)[z][0][k])*alfa*weight1 +  (elementSurface(element)[z][1][i] * elementSurface(element)[z][1][k])*alfa*weight2);
                     }
                 }
         }
+        return matrixH_BC;
+    }
 
-        for(int i=0; i<localCoordinate.length; i++) {
-            for (int k = 0; k < localCoordinate.length; k++) {
-        System.out.println(matrixH_BC[i][k]);
+    public void vector_P(Element element){
+        double [][] vectorP = new double [1][localCoordinate.length];
+        double [][] matrix_P = new double[4][4];
+        for(int z=0;z<localCoordinate.length;z++){
+            for(int i=0; i<localCoordinate.length; i++) {
+                for (int k = 0; k < localCoordinate.length; k++) {
+                    matrix_P[i][k] += matrixOfJacobiego(element)[0][i]*((initialTemperature*(-alfa)*elementSurface(element)[z][0][i] * elementSurface(element)[z][0][k]) +  initialTemperature*(-alfa)*(elementSurface(element)[z][1][i] * elementSurface(element)[z][1][k]));
+                }
             }
         }
 
+        for(int i=0; i<localCoordinate.length; i++){
+            for(int j = 0; j < localCoordinate.length; j++){
+                vectorP[0][j] += matrix_P[i][j];
+
+            }
+        }
     }
 
-    public void vector_P(){
-        double [][] p = new double[localCoordinate.length][localCoordinate.length];
-        for(int i=0;i<localCoordinate.length;i++){
-            for(int j=0;j<localCoordinate.length;j++){
-                p[i][j] = -alfa*shapeFunctions[i][j]*initialTemperature;
+    public double [][] Hlocal(Element element){
+        double [][] matrixHLocal = new double[4][4];
+        double [][] matrixH = matrixH(element);
+        double [][] matrixHBC = matrixH_BC(element);
+        for(int i=0;i<4;i++){
+            for(int j=0;j<4;j++){
+                matrixHLocal[i][j] = matrixH[i][j] ;
+            }
+        }
+        return matrixHLocal;
+    }
+
+    public void aggregation(Grid gird){
+
+        Element [] elements = gird.getElements();
+        int [][] H_global = new int[gird.getNodes().length][gird.getNodes().length];
+        int [][] C_global = new int[gird.getNodes().length][gird.getNodes().length];
+        int [][] H_BC_global = new int[gird.getNodes().length][gird.getNodes().length];
+
+        for(int i=0;i<elements.length;i++){
+            int[] ID = new int[4];
+            for(int j=0;j<4;j++){
+                ID[j] = elements[i].Nodes[j].getIndex() -1;
+            }
+
+            for(int z=0;z<4;z++){
+                for(int k=0;k<4;k++){
+                    H_global[ID[z]][ID[k]] += matrixH(elements[i])[z][k];
+                    H_BC_global[ID[z]][ID[k]] += matrixH_BC(elements[i])[z][k];
+                    C_global[ID[z]][ID[k]] += matrixC(elements[i])[z][k];
+
+                }
             }
         }
 
+        System.out.println();
+        System.out.println("Matrix H global");
+        for(int i=0;i<gird.getNodes().length;i++){
+            System.out.println(Arrays.toString(H_global[i]));
+        }
+
+        System.out.println();
+        System.out.println("Matrix H BC global");
+        for(int i=0;i<gird.getNodes().length;i++){
+            System.out.println(Arrays.toString(H_BC_global[i]));
+        }
+
+        System.out.println();
+        System.out.println("Matrix C global");
+        for(int i=0;i<gird.getNodes().length;i++){
+            System.out.println(Arrays.toString(C_global[i]));
+        }
+
+
     }
+
+
 
 }

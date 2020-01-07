@@ -7,6 +7,8 @@ public class Grid {
     GlobalDate globalDate = new GlobalDate();
     private Node[] nodes;
     private Element[] elements;
+    private final double deltaX = (globalDate.getWidth()) / (globalDate.getNumberNodeWidth() -1);
+    private final double deltaY = (globalDate.getHeight()) / (globalDate.getNumberNodeHight() -1);
 
     public Grid() {
         buildNodes();
@@ -15,14 +17,10 @@ public class Grid {
 
     public void buildNodes(){
         this.nodes = new Node[globalDate.getNumberOfNodes()];
-        //double deltaX = (globalDate.getWidth()) / (globalDate.getNumberNodeWidth() -1);
-        //double deltaY = (globalDate.getHeight()) / (globalDate.getNumberNodeHight() -1);
-        double deltaX = 0.025;
-        double deltaY = 0.025;
         int index = 1;
         for(int i=0; i<globalDate.getNumberNodeWidth(); i++){
             for(int j=0; j<globalDate.getNumberNodeHight(); j++ ){
-                Node node = new Node(index,i*deltaX,j*deltaY,100,globalDate.getHeight(),globalDate.getWidth());
+                Node node = new Node(index,i*deltaX,j*deltaY,500,globalDate.getHeight(),globalDate.getWidth());
                 nodes[index-1] = node;
                 //System.out.println(node.toString());
                 index++;

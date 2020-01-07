@@ -36,7 +36,6 @@ public class GlobalDate {
         return numberNodeWidth;
     }
 
-
     public int getNumberOfElements() {
         return numberOfElements;
     }
