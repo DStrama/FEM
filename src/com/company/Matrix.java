@@ -1,23 +1,31 @@
 package com.company;
 
+import org.la4j.Vector;
+import org.la4j.Vectors;
+import org.la4j.linear.GaussianSolver;
+import org.la4j.matrix.dense.Basic1DMatrix;
+import org.la4j.matrix.dense.Basic2DMatrix;
+import org.la4j.vector.dense.BasicVector;
 import org.w3c.dom.ls.LSOutput;
 
 import java.util.Arrays;
 
 public class Matrix {
-    //private double E = (1/Math.sqrt(3));
+
     private double E = (1/Math.sqrt(3));
     private double n = (1/Math.sqrt(3));
     private double weight1 = 1;
     private double weight2 = 1;
-    //CONDUCTIVITY
-    private double K = 25;
-    //SPECIFIC HEAT
-    private double c = 700;
-    //DENSITY
-    private double ro = 7800;
-    private double alfa = 300;
-    private double initialTemperature = 1200;
+
+    GlobalDate globalDate = new GlobalDate();
+    private double initialTemperature = globalDate.getInitialTemperature();
+    private double simulationTime = globalDate.getSimulationTime();
+    private double simulationStepTime = globalDate.getSimulationStepTime();
+    private double ambientTemperature = globalDate.getAmbientTemperature();
+    private double alfa = globalDate.getAlfa();
+    private double specificHeat = globalDate.getSpecificHeat();
+    private double conductivity = globalDate.getConductivity();
+    private double density = globalDate.getDensity();
 
     private UniversalElement[] localCoordinate = new UniversalElement[]{
             new UniversalElement(-E,-n,weight1,weight2),
@@ -137,7 +145,7 @@ public class Matrix {
         for(int z=0; z<localCoordinate.length;z++) {
             for(int i = 0; i < localCoordinate.length; i++){
                 for(int j = 0; j < localCoordinate.length; j++){
-                    eleMatrixH[z][i][j] = K*(dNafterDx(element)[z][i]*dNafterDx(element)[z][j] + dNafterDy(element)[z][i]*dNafterDy(element)[z][j])*detJacobi(element)[z];
+                    eleMatrixH[z][i][j] = conductivity*(dNafterDx(element)[z][i]*dNafterDx(element)[z][j] + dNafterDy(element)[z][i]*dNafterDy(element)[z][j])*detJacobi(element)[z];
                     matrixH[i][j] += eleMatrixH[z][i][j];
                 }
             }
@@ -152,7 +160,7 @@ public class Matrix {
         for(int z=0; z<localCoordinate.length;z++) {
             for(int i = 0; i < localCoordinate.length; i++){
                 for(int j = 0; j < localCoordinate.length; j++){
-                    eleMatrixC[z][i][j] = c*ro*(shapeFunctionsElement2D()[z][i]*shapeFunctionsElement2D()[z][j])*detJacobi(element)[z];
+                    eleMatrixC[z][i][j] = specificHeat*density*(shapeFunctionsElement2D()[z][i]*shapeFunctionsElement2D()[z][j])*detJacobi(element)[z];
                     matrixC[i][j] += eleMatrixC[z][i][j];
                 }
             }
@@ -245,44 +253,29 @@ public class Matrix {
         return matrixH_BC;
     }
 
-    public void vector_P(Element element){
-        double [][] vectorP = new double [1][localCoordinate.length];
+    public double[] vector_P(Element element){
+        double [] vectorP = new double [localCoordinate.length];
         double [][] matrix_P = new double[4][4];
         for(int z=0;z<localCoordinate.length;z++){
             for(int i=0; i<localCoordinate.length; i++) {
                 for (int k = 0; k < localCoordinate.length; k++) {
-                    matrix_P[i][k] += matrixOfJacobiego(element)[0][i]*((initialTemperature*(-alfa)*elementSurface(element)[z][0][i] * elementSurface(element)[z][0][k]) +  initialTemperature*(-alfa)*(elementSurface(element)[z][1][i] * elementSurface(element)[z][1][k]));
+                    matrix_P[i][k] += matrixOfJacobiego(element)[0][i]*((ambientTemperature*(-alfa)*elementSurface(element)[z][0][i] * elementSurface(element)[z][0][k]) +  ambientTemperature*(-alfa)*(elementSurface(element)[z][1][i] * elementSurface(element)[z][1][k]));
                 }
             }
         }
 
         for(int i=0; i<localCoordinate.length; i++){
             for(int j = 0; j < localCoordinate.length; j++){
-                vectorP[0][j] += matrix_P[i][j];
+                vectorP[j] += matrix_P[i][j];
 
             }
         }
+        return vectorP;
     }
 
-    public double [][] Hlocal(Element element){
-        double [][] matrixHLocal = new double[4][4];
-        double [][] matrixH = matrixH(element);
-        double [][] matrixHBC = matrixH_BC(element);
-        for(int i=0;i<4;i++){
-            for(int j=0;j<4;j++){
-                matrixHLocal[i][j] = matrixH[i][j] ;
-            }
-        }
-        return matrixHLocal;
-    }
-
-    public void aggregation(Grid gird){
-
+    public double[][] calculate_H_global(Grid gird){
         Element [] elements = gird.getElements();
-        int [][] H_global = new int[gird.getNodes().length][gird.getNodes().length];
-        int [][] C_global = new int[gird.getNodes().length][gird.getNodes().length];
-        int [][] H_BC_global = new int[gird.getNodes().length][gird.getNodes().length];
-
+        double [][] H_global = new double[gird.getNodes().length][gird.getNodes().length];
         for(int i=0;i<elements.length;i++){
             int[] ID = new int[4];
             for(int j=0;j<4;j++){
@@ -292,34 +285,135 @@ public class Matrix {
             for(int z=0;z<4;z++){
                 for(int k=0;k<4;k++){
                     H_global[ID[z]][ID[k]] += matrixH(elements[i])[z][k];
-                    H_BC_global[ID[z]][ID[k]] += matrixH_BC(elements[i])[z][k];
-                    C_global[ID[z]][ID[k]] += matrixC(elements[i])[z][k];
-
                 }
             }
         }
 
-        System.out.println();
-        System.out.println("Matrix H global");
-        for(int i=0;i<gird.getNodes().length;i++){
-            System.out.println(Arrays.toString(H_global[i]));
+//        System.out.println();
+//        System.out.println("Matrix H global");
+//        for(int i=0;i<gird.getNodes().length;i++){
+//            System.out.println(Arrays.toString(H_global[i]));
+//        }
+
+        return H_global;
+    }
+
+    public double[][] calculate_C_global(Grid gird){
+        Element [] elements = gird.getElements();
+        double [][] C_global = new double[gird.getNodes().length][gird.getNodes().length];
+        for(int i=0;i<elements.length;i++){
+            int[] ID = new int[4];
+            for(int j=0;j<4;j++){
+                ID[j] = elements[i].Nodes[j].getIndex() -1;
+            }
+
+            for(int z=0;z<4;z++){
+                for(int k=0;k<4;k++){
+                    C_global[ID[z]][ID[k]] += matrixC(elements[i])[z][k];
+                }
+            }
         }
 
-        System.out.println();
-        System.out.println("Matrix H BC global");
-        for(int i=0;i<gird.getNodes().length;i++){
-            System.out.println(Arrays.toString(H_BC_global[i]));
+//        System.out.println();
+//        System.out.println("Matrix C global");
+//        for(int i=0;i<gird.getNodes().length;i++){
+//            System.out.println(Arrays.toString(C_global[i]));
+//        }
+
+        return C_global;
+    }
+
+    public double[][] calculate_H_BC_global(Grid gird){
+        Element [] elements = gird.getElements();
+        double [][] H_BC_global = new double[gird.getNodes().length][gird.getNodes().length];
+        for(int i=0;i<elements.length;i++){
+            int[] ID = new int[4];
+            for(int j=0;j<4;j++){
+                ID[j] = elements[i].Nodes[j].getIndex() -1;
+            }
+
+            for(int z=0;z<4;z++){
+                for(int k=0;k<4;k++){
+                    H_BC_global[ID[z]][ID[k]] += matrixH_BC(elements[i])[z][k];
+                }
+            }
         }
 
-        System.out.println();
-        System.out.println("Matrix C global");
-        for(int i=0;i<gird.getNodes().length;i++){
-            System.out.println(Arrays.toString(C_global[i]));
+//        System.out.println();
+//        System.out.println("Matrix H BC global");
+//        for(int i=0;i<gird.getNodes().length;i++){
+//            System.out.println(Arrays.toString(H_BC_global[i]));
+//        }
+        return H_BC_global;
+    }
+
+    public double[] calculate_Vector_P(Grid gird){
+        Element [] elements = gird.getElements();
+        double [] P_vector_global = new double[gird.getNodes().length];
+        for(int i=0;i<elements.length;i++){
+            int[] ID = new int[4];
+            for(int j=0;j<4;j++){
+                ID[j] = elements[i].Nodes[j].getIndex() -1;
+            }
+            for(int k=0;k<4;k++){
+                    P_vector_global[ID[k]] += vector_P(elements[i])[k];
+            }
+        }
+
+//        System.out.println();
+//        System.out.println("Vector P global");
+//        System.out.println(Arrays.toString(P_vector_global));
+
+        return P_vector_global;
+    }
+
+
+    public void Simulation(Grid grid){
+
+        int iterationSteps = (int)(simulationTime/simulationStepTime);
+        double [] nodesTemperatures = new double[new GlobalDate().getNumberOfNodes()];
+        Arrays.fill(nodesTemperatures,100);
+
+        for(int k=0;k<iterationSteps;k++){
+            double [][] global_H = calculate_H_global(grid);
+            double[][] global_H_BC= calculate_H_BC_global(grid);
+            double[][] global_C = calculate_C_global(grid);
+            double [] vector_P = calculate_Vector_P(grid);
+
+            for(int j=0;j<global_C.length;j++){
+                vector_P[j] *=(-1);
+            }
+
+            for(int i=0;i<global_C.length;i++){
+                for(int j=0;j<global_C.length;j++){
+                    global_H[i][j] += global_H_BC[i][j];
+                    global_H[i][j]  +=  global_C[i][j]*1/simulationStepTime;
+                    vector_P[j] = vector_P[j] + (global_C[i][j]/simulationStepTime)*nodesTemperatures[i];
+                }
+            }
+
+            Basic2DMatrix MatrixH = new Basic2DMatrix(global_H);
+            BasicVector vector_p_type = new BasicVector(vector_P);
+            GaussianSolver gaussianSolver = new GaussianSolver(MatrixH);
+            BasicVector t1 = (BasicVector) gaussianSolver.solve(vector_p_type);
+            nodesTemperatures = t1.toArray();
+            double[] aditionalArray = nodesTemperatures.clone();
+            Arrays.sort(aditionalArray);
+
+            System.out.println(Arrays.toString(nodesTemperatures));
+            System.out.println("H Matrix ([H]+[C]/dT)");
+            System.out.println(MatrixH);
+            System.out.println();
+
+            System.out.println("P_Vector ([{P}+{[C]/dT}*{T0})");
+            System.out.println(vector_p_type);
+            System.out.println();
+
+            System.out.println( "Min:" + aditionalArray[0] +" Max: " + aditionalArray[aditionalArray.length-1]);
         }
 
 
     }
-
 
 
 }
