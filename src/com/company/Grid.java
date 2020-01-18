@@ -20,7 +20,7 @@ public class Grid {
         int index = 1;
         for(int i=0; i<globalDate.getNumberNodeWidth(); i++){
             for(int j=0; j<globalDate.getNumberNodeHight(); j++ ){
-                Node node = new Node(index,i*deltaX,j*deltaY,500,globalDate.getHeight(),globalDate.getWidth());
+                Node node = new Node(index,i*deltaX,j*deltaY,0,globalDate.getHeight(),globalDate.getWidth());
                 nodes[index-1] = node;
                 //System.out.println(node.toString());
                 index++;

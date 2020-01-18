@@ -28,6 +28,10 @@ public class Node {
         this.boundaryCondition = boundryCondition(H,W);
     }
 
+    public void setTempatature(double tempatature) {
+        this.tempatature = tempatature;
+    }
+
     public boolean isBoundaryCondition() {
         return boundaryCondition;
     }

@@ -34,8 +34,19 @@ public class Matrix {
             new UniversalElement(-E,n,weight1,weight2)
     };
 
+    private double [][] shapeFunctions = new double[localCoordinate.length][localCoordinate.length];
+    private double [][] derivativesAfterXi = new double[localCoordinate.length][localCoordinate.length];
+    private double [][] derivativesAfterEta = new double[localCoordinate.length][localCoordinate.length];
+    private double [][] matrixJacobi = new double[localCoordinate.length][localCoordinate.length];
+    private double [] detJacobiTab = new double[localCoordinate.length];
+    double [][] dNAfterdy = new double[localCoordinate.length][localCoordinate.length];
+    double [][] dNAfterdx = new double[localCoordinate.length][localCoordinate.length];
+    double [][] matrixH = new double[localCoordinate.length][localCoordinate.length];
+    double [][] matrixH_BC = new double[localCoordinate.length][localCoordinate.length];
+    double [][] matrixC = new double[localCoordinate.length][localCoordinate.length];
 
-    public double[][] shapeFunctionsElement2D(){
+
+    public void shapeFunctionsElement2D(){
 
         double[][] matrixOfShapeFunctions = new double[4][4];
 
@@ -46,11 +57,11 @@ public class Matrix {
                     localCoordinate[i].shapeFunctions[2],
                     localCoordinate[i].shapeFunctions[3]};
         }
-        return matrixOfShapeFunctions;
+        shapeFunctions = matrixOfShapeFunctions;
     }
 
 
-    public double [][] matrixDerivativesAfterXi(){
+    public void matrixDerivativesAfterXi(){
 
         double[][] matrixDerivativesAfterXi = new double[4][4];
 
@@ -61,10 +72,10 @@ public class Matrix {
                     localCoordinate[i].derivativesAfterXi[2],
                     localCoordinate[i].derivativesAfterXi[3]};
         }
-        return matrixDerivativesAfterXi;
+        derivativesAfterXi = matrixDerivativesAfterXi;
     }
 
-    public double[][] matrixDerivativesAfterEta(){
+    public void matrixDerivativesAfterEta(){
 
         double[][] matrixDerivativesAfterEta = new double[4][4];
 
@@ -75,10 +86,10 @@ public class Matrix {
                     localCoordinate[i].derivativesAfterEta[2],
                     localCoordinate[i].derivativesAfterEta[3]};
         }
-        return matrixDerivativesAfterEta;
+        derivativesAfterEta = matrixDerivativesAfterEta;
     }
 
-    public double[][] matrixOfJacobiego(Element element){
+    public void matrixOfJacobiego(Element element){
 
         double[][] matrixOfElementJacobian = new double[4][4];
         double[] dx_dxi = new double[4];
@@ -88,53 +99,53 @@ public class Matrix {
 
         for(int i=0;i<localCoordinate.length;i++){
             for(int j=0; j<localCoordinate.length;j++){
-                dx_dxi[i] += matrixDerivativesAfterXi()[i][j] * element.Nodes[j].getX();
-                dx_dn[i] +=  matrixDerivativesAfterEta()[i][j] * element.Nodes[j].getX();
-                dy_dxi[i] += matrixDerivativesAfterXi()[i][j] * element.Nodes[j].getY();
-                dy_dn[i] += matrixDerivativesAfterEta()[i][j] * element.Nodes[j].getY();
+                dx_dxi[i] += derivativesAfterXi[i][j] * element.Nodes[j].getX();
+                dx_dn[i] +=  derivativesAfterEta[i][j] * element.Nodes[j].getX();
+                dy_dxi[i] += derivativesAfterXi[i][j] * element.Nodes[j].getY();
+                dy_dn[i] += derivativesAfterEta[i][j] * element.Nodes[j].getY();
             }
             matrixOfElementJacobian[0][i] = dx_dxi[i];
             matrixOfElementJacobian[1][i] = dx_dn[i];
             matrixOfElementJacobian[2][i] = dy_dxi[i];
             matrixOfElementJacobian[3][i] = dy_dn[i];
         }
-        return matrixOfElementJacobian;
+        matrixJacobi = matrixOfElementJacobian;
     }
 
-    public double[] detJacobi(Element element){
+    public void detJacobi(){
 
         double [] matrixDetJacobi = new double[localCoordinate.length];
 
         for(int j = 0; j<localCoordinate.length; j++){
-            matrixDetJacobi[j] = (matrixOfJacobiego(element)[0][j] * matrixOfJacobiego(element)[3][j]) - (matrixOfJacobiego(element)[2][j] * matrixOfJacobiego(element)[1][j]);
+            matrixDetJacobi[j] = (matrixJacobi[0][j] * matrixJacobi[3][j]) - (matrixJacobi[2][j] * matrixJacobi[1][j]);
         }
-        return matrixDetJacobi;
+        detJacobiTab = matrixDetJacobi;
     }
 
 
-    public double[][] dNafterDx(Element element){
+    public void dNafterDx(){
 
         double [][] Matrix_dNAfterdx = new double[localCoordinate.length][localCoordinate.length];
 
         for(int i=0; i<localCoordinate.length;i++){
             for(int j=0; j<localCoordinate.length;j++){
-                Matrix_dNAfterdx[i][j] = (1/detJacobi(element)[i]) * ( (matrixOfJacobiego(element)[3][i] * matrixDerivativesAfterXi()[i][j]) - (matrixOfJacobiego(element)[2][i] * matrixDerivativesAfterEta()[i][j]));
+                Matrix_dNAfterdx[i][j] = (1/detJacobiTab[i]) * ( (matrixJacobi[3][i] * derivativesAfterXi[i][j]) - (matrixJacobi[2][i] * derivativesAfterEta[i][j]));
             }
         }
-        return Matrix_dNAfterdx;
+        dNAfterdx = Matrix_dNAfterdx;
     }
 
-    public double[][] dNafterDy(Element element){
+    public void dNafterDy(){
 
         double [][] Matrix_dNAfterdy = new double[localCoordinate.length][localCoordinate.length];
 
         for(int i=0; i<localCoordinate.length;i++){
             for(int j=0; j<localCoordinate.length;j++){
-                Matrix_dNAfterdy[i][j] = (1/detJacobi(element)[i]) * ( (matrixOfJacobiego(element)[0][i] * matrixDerivativesAfterEta()[i][j]) - (matrixOfJacobiego(element)[1][i] *  matrixDerivativesAfterXi()[i][j]));
+                Matrix_dNAfterdy[i][j] = (1/detJacobiTab[i]) * ( (matrixJacobi[0][i] * derivativesAfterEta[i][j]) - (matrixJacobi[1][i] *  derivativesAfterXi[i][j]));
 
             }
         }
-        return Matrix_dNAfterdy;
+        dNAfterdy = Matrix_dNAfterdy;
     }
 
     public double [][] matrixH(Element element){
@@ -145,7 +156,7 @@ public class Matrix {
         for(int z=0; z<localCoordinate.length;z++) {
             for(int i = 0; i < localCoordinate.length; i++){
                 for(int j = 0; j < localCoordinate.length; j++){
-                    eleMatrixH[z][i][j] = conductivity*(dNafterDx(element)[z][i]*dNafterDx(element)[z][j] + dNafterDy(element)[z][i]*dNafterDy(element)[z][j])*detJacobi(element)[z];
+                    eleMatrixH[z][i][j] = conductivity*(dNAfterdx[z][i]*dNAfterdx[z][j] + dNAfterdy[z][i]*dNAfterdy[z][j])*detJacobiTab[z];
                     matrixH[i][j] += eleMatrixH[z][i][j];
                 }
             }
@@ -160,7 +171,7 @@ public class Matrix {
         for(int z=0; z<localCoordinate.length;z++) {
             for(int i = 0; i < localCoordinate.length; i++){
                 for(int j = 0; j < localCoordinate.length; j++){
-                    eleMatrixC[z][i][j] = specificHeat*density*(shapeFunctionsElement2D()[z][i]*shapeFunctionsElement2D()[z][j])*detJacobi(element)[z];
+                    eleMatrixC[z][i][j] = specificHeat*density*(shapeFunctions[z][i]*shapeFunctions[z][j])*detJacobiTab[z];
                     matrixC[i][j] += eleMatrixC[z][i][j];
                 }
             }
@@ -246,7 +257,7 @@ public class Matrix {
         for(int z=0;z<localCoordinate.length;z++){
                 for(int i=0; i<localCoordinate.length; i++) {
                     for (int k = 0; k < localCoordinate.length; k++) {
-                        matrixH_BC[i][k] += matrixOfJacobiego(element)[0][z]*((elementSurface(element)[z][0][i] * elementSurface(element)[z][0][k])*alfa*weight1 +  (elementSurface(element)[z][1][i] * elementSurface(element)[z][1][k])*alfa*weight2);
+                        matrixH_BC[i][k] += matrixJacobi[0][z]*((elementSurface(element)[z][0][i] * elementSurface(element)[z][0][k])*alfa*weight1 +  (elementSurface(element)[z][1][i] * elementSurface(element)[z][1][k])*alfa*weight2);
                     }
                 }
         }
@@ -259,7 +270,7 @@ public class Matrix {
         for(int z=0;z<localCoordinate.length;z++){
             for(int i=0; i<localCoordinate.length; i++) {
                 for (int k = 0; k < localCoordinate.length; k++) {
-                    matrix_P[i][k] += matrixOfJacobiego(element)[0][i]*((ambientTemperature*(-alfa)*elementSurface(element)[z][0][i] * elementSurface(element)[z][0][k]) +  ambientTemperature*(-alfa)*(elementSurface(element)[z][1][i] * elementSurface(element)[z][1][k]));
+                    matrix_P[i][k] += matrixJacobi[0][i]*((ambientTemperature*(-alfa)*elementSurface(element)[z][0][i] * elementSurface(element)[z][0][k]) +  ambientTemperature*(-alfa)*(elementSurface(element)[z][1][i] * elementSurface(element)[z][1][k]));
                 }
             }
         }
@@ -368,52 +379,15 @@ public class Matrix {
     }
 
 
-    public void Simulation(Grid grid){
-
-        int iterationSteps = (int)(simulationTime/simulationStepTime);
-        double [] nodesTemperatures = new double[new GlobalDate().getNumberOfNodes()];
-        Arrays.fill(nodesTemperatures,100);
-
-        for(int k=0;k<iterationSteps;k++){
-            double [][] global_H = calculate_H_global(grid);
-            double[][] global_H_BC= calculate_H_BC_global(grid);
-            double[][] global_C = calculate_C_global(grid);
-            double [] vector_P = calculate_Vector_P(grid);
-
-            for(int j=0;j<global_C.length;j++){
-                vector_P[j] *=(-1);
-            }
-
-            for(int i=0;i<global_C.length;i++){
-                for(int j=0;j<global_C.length;j++){
-                    global_H[i][j] += global_H_BC[i][j];
-                    global_H[i][j]  +=  global_C[i][j]*1/simulationStepTime;
-                    vector_P[j] = vector_P[j] + (global_C[i][j]/simulationStepTime)*nodesTemperatures[i];
-                }
-            }
-
-            Basic2DMatrix MatrixH = new Basic2DMatrix(global_H);
-            BasicVector vector_p_type = new BasicVector(vector_P);
-            GaussianSolver gaussianSolver = new GaussianSolver(MatrixH);
-            BasicVector t1 = (BasicVector) gaussianSolver.solve(vector_p_type);
-            nodesTemperatures = t1.toArray();
-            double[] aditionalArray = nodesTemperatures.clone();
-            Arrays.sort(aditionalArray);
-
-            System.out.println(Arrays.toString(nodesTemperatures));
-            System.out.println("H Matrix ([H]+[C]/dT)");
-            System.out.println(MatrixH);
-            System.out.println();
-
-            System.out.println("P_Vector ([{P}+{[C]/dT}*{T0})");
-            System.out.println(vector_p_type);
-            System.out.println();
-
-            System.out.println( "Min:" + aditionalArray[0] +" Max: " + aditionalArray[aditionalArray.length-1]);
-        }
-
-
+    public double getInitialTemperature() {
+        return initialTemperature;
     }
 
+    public double getSimulationTime() {
+        return simulationTime;
+    }
 
+    public double getSimulationStepTime() {
+        return simulationStepTime;
+    }
 }
