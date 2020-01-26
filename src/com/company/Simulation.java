@@ -58,11 +58,11 @@ public class Simulation {
                     grid.getNodes()[i].setTempatature(aditionalArray[i]);
 
                 }
-                for(int i=0;i<grid.getElements().length;i++){
-                    for(int j=0;j<4;j++){
-                        System.out.println(grid.getElements()[i].getNodes()[j]);
-                    }
-                }
+//                for(int i=0;i<grid.getElements().length;i++){
+//                    for(int j=0;j<4;j++){
+//                        System.out.println(grid.getElements()[i].getNodes()[j]);
+//                    }
+//                }
                 Arrays.sort(aditionalArray);
                 minTemperatures[k] = aditionalArray[0];
                 maxTemperatures[k] = aditionalArray[aditionalArray.length-1];

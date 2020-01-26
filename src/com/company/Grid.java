@@ -22,7 +22,6 @@ public class Grid {
             for(int j=0; j<globalDate.getNumberNodeHight(); j++ ){
                 Node node = new Node(index,i*deltaX,j*deltaY,0,globalDate.getHeight(),globalDate.getWidth());
                 nodes[index-1] = node;
-                //System.out.println(node.toString());
                 index++;
             }
         }
@@ -43,7 +42,7 @@ public class Grid {
                     nodes[ nodes[indexE-1].getIndex()-1 + (int)globalDate.getNumberNodeHight() + 1],
                     nodes[ nodes[indexE-1].getIndex()-1 + 1 ]);
             indexE++;
-            //System.out.println(elements[i].toString());
+            System.out.println(elements[i].toString());
         }
 
     }
