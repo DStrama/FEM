@@ -1,1 +1,1 @@
-Metoda elementów skończonych - Ćwiczenia projektowe
+Transient solution for finite elements method 2D problem - heat transfer simulation.
